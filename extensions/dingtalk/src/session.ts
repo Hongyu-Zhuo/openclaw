@@ -1,12 +1,27 @@
+// ============ Session Data Structure ============
+
+/**
+ * User session state: tracks last activity time and current session identifier
+ */
 interface UserSession {
   lastActivity: number;
-  sessionId: string;
+  sessionId: string; // Format: dingtalk-connector:<senderId> or dingtalk-connector:<senderId>:<timestamp>
 }
 
+/** User session cache Map<senderId, UserSession> */
 const userSessions = new Map<string, UserSession>();
+
+/** Message deduplication cache Map<messageId, timestamp> - prevents duplicate processing of the same message */
 const processedMessages = new Map<string, number>();
+
+/** Message deduplication cache expiration time (5 minutes) */
 const MESSAGE_DEDUP_TTL = 5 * 60 * 1000;
 
+// ============ Message Deduplication Handling ============
+
+/**
+ * Cleans up expired message data from the deduplication cache
+ */
 function cleanupProcessedMessages(): void {
   const now = Date.now();
   for (const [msgId, timestamp] of processedMessages.entries()) {
@@ -16,11 +31,21 @@ function cleanupProcessedMessages(): void {
   }
 }
 
+/**
+ * Checks if a message has already been processed (deduplication check)
+ * @param messageId The unique ID of the message
+ * @returns true if the message is already processed
+ */
 export function isMessageProcessed(messageId: string): boolean {
   if (!messageId) return false;
   return processedMessages.has(messageId);
 }
 
+/**
+ * Marks a message as processed. Automatically cleans up the cache
+ * when the size reaches a given threshold (100).
+ * @param messageId The unique ID of the message
+ */
 export function markMessageProcessed(messageId: string): void {
   if (!messageId) return;
   processedMessages.set(messageId, Date.now());
@@ -29,13 +54,30 @@ export function markMessageProcessed(messageId: string): void {
   }
 }
 
+// ============ Session Commands Parsing ============
+
+/** Commands triggering a new session */
 const NEW_SESSION_COMMANDS = ["/new", "/reset", "/clear", "新会话", "重新开始", "清空对话"];
 
+/**
+ * Checks if the message content matches a new session command
+ */
 export function isNewSessionCommand(text: string): boolean {
   const trimmed = text.trim().toLowerCase();
   return NEW_SESSION_COMMANDS.some((cmd) => trimmed === cmd.toLowerCase());
 }
 
+// ============ Unified Session Retrieval ============
+
+/**
+ * Gets or creates a user session key mapping.
+ * Handles automatic timeout reset and forced new sessions.
+ * @param senderId The user ID
+ * @param forceNew Whether to forcefully reset the session
+ * @param sessionTimeout The session timeout duration in milliseconds
+ * @param log Optional logger
+ * @returns An object containing the derived sessionKey and a boolean indicating if it's new
+ */
 export function getSessionKey(
   senderId: string,
   forceNew: boolean,

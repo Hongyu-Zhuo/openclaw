@@ -1,17 +1,32 @@
 import type { ClawdbotConfig } from "openclaw/plugin-sdk";
 import { DingtalkAccountConfig, ResolvedDingtalkAccount } from "./types.js";
 
+// ============ Configuration Extraction ============
+
+/**
+ * Pulls out the DingTalk channels configuration sub-tree from the global config file.
+ */
 export function getDingTalkConfigs(
   cfg: ClawdbotConfig,
 ): Record<string, DingtalkAccountConfig> | null {
   return (cfg.channels as { dingtalk?: Record<string, DingtalkAccountConfig> })?.dingtalk || null;
 }
 
+/**
+ * Quickly determines if DingTalk is configured properly
+ * (verifies presence of clientId and clientSecret credentials).
+ */
 export function isConfigured(cfg: ClawdbotConfig): boolean {
   const config = getDingTalkConfigs(cfg) as DingtalkAccountConfig | undefined;
   return Boolean(config?.clientId && config?.clientSecret);
 }
 
+// ============ Account Resolution ============
+
+/**
+ * Resolves the configuration for a specific DingTalk account ID, falling back
+ * to the default account. Normalizes structure resolving multitenant setups.
+ */
 export function resolveDingTalkAccount(
   cfg: ClawdbotConfig,
   accountId?: string | null,

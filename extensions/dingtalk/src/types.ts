@@ -1,5 +1,8 @@
 import type { ClawdbotConfig } from "openclaw/plugin-sdk";
 
+// ============ Type Definitions ============
+
+/** Standard logger facade adopted throughout the plugin execution paths */
 export interface DingTalkLogger {
   info?: (msg: string) => void;
   warn?: (msg: string) => void;
@@ -7,6 +10,7 @@ export interface DingTalkLogger {
   debug?: (msg: string) => void;
 }
 
+/** User's DingTalk account configuration payload merged from global credentials */
 export interface DingtalkAccountConfig {
   clientId?: string;
   clientSecret?: string;
@@ -24,6 +28,7 @@ export interface DingtalkAccountConfig {
   enabled?: boolean;
 }
 
+/** Processed integration account configurations bridging raw state with execution availability checks */
 export interface ResolvedDingtalkAccount {
   accountId: string;
   config: DingtalkAccountConfig;
@@ -33,6 +38,7 @@ export interface ResolvedDingtalkAccount {
 
 export type DingTalkMsgType = "text" | "markdown" | "link" | "actionCard" | "image";
 
+/** Tracks structural indicators returning transmission status to parent callers */
 export interface SendResult {
   ok: boolean;
   processQueryKey?: string;
@@ -41,6 +47,7 @@ export interface SendResult {
   usedAICard?: boolean;
 }
 
+/** General target addressing resolution required when launching specific APIs or Proactive queries */
 export interface ProactiveSendOptions {
   msgType?: DingTalkMsgType;
   title?: string;
@@ -49,10 +56,12 @@ export interface ProactiveSendOptions {
   fallbackToNormal?: boolean;
 }
 
+/** Defines whether an AI card delivery targets a unified conversational loop or explicitly addresses discrete users */
 export type AICardTarget =
   | { type: "user"; userId: string }
   | { type: "group"; openConversationId: string };
 
+/** State representation containing access tokens and transaction identifiers for an active interactive card */
 export interface AICardInstance {
   cardInstanceId: string;
   accessToken: string;

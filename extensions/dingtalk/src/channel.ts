@@ -8,6 +8,13 @@ import { sendToUser, sendToGroup } from "./send.js";
 import { isMessageProcessed, markMessageProcessed } from "./session.js";
 import type { ResolvedDingtalkAccount, DingtalkAccountConfig } from "./types.js";
 
+// ============ DingTalk Channel Plugin ============
+
+/**
+ * The standard OpenClaw DingTalk Channel Plugin instance arrayed for the runtime context.
+ * Utilizes the DingTalk Stream mode (websocket-like) which bypasses public IP port-forwarding requirements
+ * and actively supports fluid, streaming AI Card interactions.
+ */
 export const dingtalkPlugin: ChannelPlugin<ResolvedDingtalkAccount> = {
   id: "dingtalk",
   meta: {

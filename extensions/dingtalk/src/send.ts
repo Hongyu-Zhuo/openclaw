@@ -16,8 +16,13 @@ import {
   DingTalkLogger,
 } from "./types.js";
 
+// ============ Constants ============
+
 const DINGTALK_API = "https://api.dingtalk.com";
 
+// ============ Basic Message Sending ============
+
+/** Formats and pushes standard Markdown message payloads using legacy webhooks based on access tokens */
 export async function sendMarkdownMessage(
   config: DingtalkAccountConfig,
   sessionWebhook: string,
@@ -27,7 +32,7 @@ export async function sendMarkdownMessage(
 ): Promise<unknown> {
   const token = await getAccessToken(config);
   let text = markdown;
-  if (options.atUserId) text = `\${text} @\${options.atUserId}`;
+  if (options.atUserId) text = `${text} @${options.atUserId}`;
 
   const body: Record<string, unknown> = {
     msgtype: "markdown",
@@ -42,6 +47,7 @@ export async function sendMarkdownMessage(
   ).data;
 }
 
+/** Directly pushes an explicit ordinary text message format payload using webhook endpoints */
 export async function sendTextMessage(
   config: DingtalkAccountConfig,
   sessionWebhook: string,
@@ -59,21 +65,26 @@ export async function sendTextMessage(
   ).data;
 }
 
+/**
+ * Generic abstraction automatically delegating content to `sendMarkdownMessage` or `sendTextMessage`
+ * depending on formatting heuristics.
+ */
 export async function sendMessage(
   config: DingtalkAccountConfig,
   sessionWebhook: string,
   text: string,
   options: Record<string, unknown> = {},
 ): Promise<unknown> {
-  const hasMarkdown = /^[#*>-]|[*_\`#\\[\\]]/.test(text) || text.includes("\\n");
+  const hasMarkdown = /^[#*>-]|[*_`#\[\]]/.test(text) || text.includes("\n");
   const useMarkdown = options.useMarkdown !== false && (options.useMarkdown || hasMarkdown);
+  console.log("sendMessage", config, sessionWebhook, text, options);
 
   if (useMarkdown) {
     const title =
       (options.title as string) ||
       text
-        .split("\\n")[0]
-        .replace(/^[#*\\s>\\-]+/, "")
+        .split("\n")[0]
+        .replace(/^[#*\s\->]+/, "")
         .slice(0, 20) ||
       "Message";
     return sendMarkdownMessage(config, sessionWebhook, title, text, options);
@@ -81,6 +92,9 @@ export async function sendMessage(
   return sendTextMessage(config, sessionWebhook, text, options);
 }
 
+// ============ Message Construction and Broadcasting ============
+
+/** Translates abstract semantic types (markdown, link, generic text) into DingTalk's specific nested JSON property requirements */
 function buildMsgPayload(
   msgType: DingTalkMsgType,
   content: string,
@@ -97,7 +111,7 @@ function buildMsgPayload(
           msgParam: typeof content === "string" ? JSON.parse(content) : content,
         };
       } catch {
-        return { error: `Invalid \${msgType} message format` };
+        return { error: `Invalid ${msgType} message format` };
       }
     case "image":
       return { msgKey: "sampleImageMsg", msgParam: { photoURL: content } };
@@ -107,6 +121,7 @@ function buildMsgPayload(
   }
 }
 
+/** Implements internal batch sending loops mapping over arrays of designated direct user targets */
 async function sendNormalToUser(
   config: DingtalkAccountConfig,
   userIds: string | string[],
@@ -127,7 +142,7 @@ async function sendNormalToUser(
       msgParam: JSON.stringify(payload.msgParam),
     };
 
-    const resp = await axios.post(`\${DINGTALK_API}/v1.0/robot/oToMessages/batchSend`, body, {
+    const resp = await axios.post(`${DINGTALK_API}/v1.0/robot/oToMessages/batchSend`, body, {
       headers: { "x-acs-dingtalk-access-token": token, "Content-Type": "application/json" },
       timeout: 10_000,
     });
@@ -145,6 +160,7 @@ async function sendNormalToUser(
   }
 }
 
+/** Routes target content generically to standard groups enforcing batch-sending API structure */
 async function sendNormalToGroup(
   config: DingtalkAccountConfig,
   openConversationId: string,
@@ -164,7 +180,7 @@ async function sendNormalToGroup(
       msgParam: JSON.stringify(payload.msgParam),
     };
 
-    const resp = await axios.post(`\${DINGTALK_API}/v1.0/robot/groupMessages/send`, body, {
+    const resp = await axios.post(`${DINGTALK_API}/v1.0/robot/groupMessages/send`, body, {
       headers: { "x-acs-dingtalk-access-token": token, "Content-Type": "application/json" },
       timeout: 10_000,
     });
@@ -182,6 +198,12 @@ async function sendNormalToGroup(
   }
 }
 
+// ============ AI Card Message Sending ============
+
+/**
+ * Executes a sequence uploading necessary interactive files,
+ * instantiating an AI-card container, and transmitting the aggregated formatted sequence.
+ */
 async function sendAICardInternal(
   config: DingtalkAccountConfig,
   target: AICardTarget,
@@ -240,6 +262,12 @@ async function sendAICardInternal(
   }
 }
 
+// ============ Platform Exposed API ============
+
+/**
+ * Top-level function mediating dispatching direct-messages to specific users,
+ * preferring AI Cards first, falling back symmetrically to standard plain/markdown configurations.
+ */
 export async function sendToUser(
   config: DingtalkAccountConfig,
   userIds: string | string[],
@@ -261,6 +289,9 @@ export async function sendToUser(
   return sendNormalToUser(config, userIdArray, content, options);
 }
 
+/**
+ * Broad capability function mediating payload delivery targeted toward open conversation groups (chats).
+ */
 export async function sendToGroup(
   config: DingtalkAccountConfig,
   openConversationId: string,
@@ -281,13 +312,16 @@ export async function sendToGroup(
   return sendNormalToGroup(config, openConversationId, content, options);
 }
 
+/**
+ * Handles proactive system sends targeting abstract peer IDs. Normalizes targets routing to individual users vs group chats.
+ */
 export async function sendProactive(
   config: DingtalkAccountConfig,
   target: { userId?: string; userIds?: string[]; openConversationId?: string },
   content: string,
   options: ProactiveSendOptions = {},
 ): Promise<SendResult> {
-  if (!options.msgType && (/^[#*>-]|[*_\`#\\[\\]]/.test(content) || content.includes("\\n"))) {
+  if (!options.msgType && (/^[#*>-]|[*_`#\[\]]/.test(content) || content.includes("\n"))) {
     options.msgType = "markdown";
   }
 

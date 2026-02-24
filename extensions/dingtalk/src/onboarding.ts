@@ -9,8 +9,13 @@ import { addWildcardAllowFrom, DEFAULT_ACCOUNT_ID, formatDocsLink } from "opencl
 import { isConfigured } from "./config.js";
 import type { DingtalkAccountConfig } from "./types.js";
 
+// ============ Constants ============
+
 const channel = "dingtalk" as const;
 
+// ============ Configuration Wizard ============
+
+/** Utility function to pull dingtalk settings specifically from the root config object */
 function getDingtalkConfig(cfg: ClawdbotConfig): DingtalkAccountConfig | undefined {
   return (cfg.channels as { dingtalk?: DingtalkAccountConfig })?.dingtalk ?? undefined;
 }
@@ -46,13 +51,18 @@ function setDingtalkAllowFrom(cfg: ClawdbotConfig, allowFrom: string[]): Clawdbo
   };
 }
 
+// ============ Interactive Prompt Wizard ============
+
+/** Transforms raw allow-list inputs separated by spaces/newlines into clean string arrays */
 function parseAllowFromInput(raw: string): string[] {
   return raw
     .split(/[\n,;]+/g)
     .map((entry) => entry.trim())
     .filter(Boolean);
 }
-
+/**
+ * Onboarding step requesting allowed specific chat-ID sources for gating DingTalk bot interactions.
+ */
 async function promptDingtalkAllowFrom(params: {
   cfg: ClawdbotConfig;
   prompter: WizardPrompter;
@@ -156,6 +166,9 @@ function setDingtalkGroupAllowFrom(cfg: ClawdbotConfig, groupAllowFrom: string[]
   };
 }
 
+// ============ Access Policy Wizard ============
+
+/** Represents DingTalk access policy requirements to configure group / DM boundaries */
 const dmPolicy: ChannelOnboardingDmPolicy = {
   label: "DingTalk",
   channel,
@@ -166,6 +179,12 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
   promptAllowFrom: promptDingtalkAllowFrom,
 };
 
+// ============ Onboarding Adapter ============
+
+/**
+ * Encapsulates the complete DingTalk integration onboarding suite connecting UI components
+ * to required state changes.
+ */
 export const dingtalkOnboardingAdapter: ChannelOnboardingAdapter = {
   channel,
 

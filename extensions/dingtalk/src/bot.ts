@@ -13,6 +13,8 @@ import type {
   DingTalkLogger,
 } from "./types.js";
 
+// ============ Constants ============
+
 const DINGTALK_API = "https://api.dingtalk.com";
 const AI_CARD_TEMPLATE_ID = "382e4302-551d-4880-bf29-a30acfab2e71.schema";
 
@@ -22,6 +24,15 @@ const AICardStatus = {
   FINISHED: "3",
 } as const;
 
+// ============ AI Card Management ============
+
+/**
+ * Creates a DingTalk AI Card instance for a specific target (user or group).
+ * @param config DingTalk account configuration carrying credentials
+ * @param target The user or group to send the AI card to
+ * @param log Optional DingTalk logger
+ * @returns The created AI Card instance references or null on failure
+ */
 export async function createAICardForTarget(
   config: DingtalkAccountConfig,
   target: AICardTarget,
@@ -78,6 +89,10 @@ export async function createAICardForTarget(
   }
 }
 
+/**
+ * Streams partial content to an existing AI Card and pushes updates
+ * via the DingTalk streaming API.
+ */
 async function streamAICard(
   card: AICardInstance,
   content: string,
@@ -127,11 +142,15 @@ async function streamAICard(
   } catch {}
 }
 
+/**
+ * Marks the AI Card stream as finished and sets its final content state.
+ */
 export async function finishAICard(
   card: AICardInstance,
   content: string,
   log?: DingTalkLogger,
 ): Promise<void> {
+  console.log("finishAICard", card, content);
   await streamAICard(card, content, true, log);
 
   const body = {
@@ -155,6 +174,12 @@ export async function finishAICard(
   } catch {}
 }
 
+// ============ Message Content Extraction ============
+
+/**
+ * Extracts plain text and native message type from arbitrary DingTalk incoming message payloads.
+ * Evaluates raw text, rich text matrices, voice recognition text, and structural file names.
+ */
 export function extractMessageContent(data: Record<string, any>): {
   text: string;
   messageType: string;
@@ -184,6 +209,13 @@ export function extractMessageContent(data: Record<string, any>): {
   }
 }
 
+// ============ Main DingTalk Message Flow ============
+
+/**
+ * The main entry point for processing inbound webhook payload requests from DingTalk.
+ * This function converts platform-specific envelope details into OpenClaw-compatible contexts,
+ * identifies resolving routes and agents, wraps the payload, and dispatches the request logic into the OpenClaw Engine.
+ */
 export async function handleDingTalkMessage(params: {
   cfg: ClawdbotConfig;
   accountId: string;

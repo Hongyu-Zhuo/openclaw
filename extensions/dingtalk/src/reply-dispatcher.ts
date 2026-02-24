@@ -28,6 +28,13 @@ export type CreateDingTalkReplyDispatcherParams = {
   log?: DingTalkLogger;
 };
 
+// ============ Core Reply Dispatcher ============
+
+/**
+ * Creates a DingTalk specific request/reply delivery dispatcher.
+ * Governs flow-control, streaming chunks, typing indicators, and manages fallback capabilities
+ * using the standard OpenClaw mechanism.
+ */
 export function createDingTalkReplyDispatcher(params: CreateDingTalkReplyDispatcherParams) {
   const core = getDingTalkRuntime();
   const { cfg, agentId, senderId, isDirect, conversationId, accountId, dingtalkConfig, log } =
@@ -117,6 +124,7 @@ export function createDingTalkReplyDispatcher(params: CreateDingTalkReplyDispatc
         void typingCallbacks.onReplyStart?.();
       },
       deliver: async (payload: ReplyPayload, info) => {
+        log?.info?.(`dingtalk[${accountId}]: deliver: ${payload.text}`);
         const text = payload.text ?? "";
         if (!text.trim()) {
           return;

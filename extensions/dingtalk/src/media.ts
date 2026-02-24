@@ -1,6 +1,11 @@
 import axios from "axios";
 import { AICardTarget, DingtalkAccountConfig, DingTalkLogger } from "./types.js";
 
+// ============ Media System Prompt ============
+
+/**
+ * Provides the system prompt instruction rules required for properly recognizing and formatting files in DingTalk context.
+ */
 export function buildMediaSystemPrompt(): string {
   return `## 钉钉图片和文件显示规则
 
@@ -42,10 +47,20 @@ export function buildMediaSystemPrompt(): string {
 \`\`\``;
 }
 
+// ============ Regex and Constants ============
+
+/**
+ * Matches markdown image syntax indicating local file paths (cross-platform).
+ * For example: `![alt](file:///path/to/image.jpg)`
+ */
 const LOCAL_IMAGE_RE =
-  /!\[([^\]]*)\]\(((?:file:\/\/\/|MEDIA:|attachment:\/\/\/)[^)]+|\/(?:tmp|var|private|Users|home|root)[^)]+|[A-Za-z]:[\\\/ ][^)]+)\)/g;
+  /!\[([^\]]*)\]\(((?:file:\/\/\/|MEDIA:|attachment:\/\/\/)[^)]+|\/(?:tmp|var|private|Users|home|root)[^)]+|[A-Za-z]:[\\/ ][^)]+)\)/g;
+/**
+ * Matches bare absolute paths in plain text indicating local image paths.
+ */
 const BARE_IMAGE_PATH_RE =
-  /`?((?:\/(?:tmp|var|private|Users|home|root)\/[^\s`'",)]+|[A-Za-z]:[\\\/][^\s`'",)]+)\.(?:png|jpg|jpeg|gif|bmp|webp))`?/gi;
+  /`?((?:\/(?:tmp|var|private|Users|home|root)\/[^\s`'",)]+|[A-Za-z]:[\\/][^\s`'",)]+)\.(?:png|jpg|jpeg|gif|bmp|webp))`?/gi;
+/** File pattern markers corresponding to the output in the Prompt */
 const FILE_MARKER_PATTERN = /\[DINGTALK_FILE\]({.*?})\[\/DINGTALK_FILE\]/g;
 const VIDEO_MARKER_PATTERN = /\[DINGTALK_VIDEO\]({.*?})\[\/DINGTALK_VIDEO\]/g;
 const AUDIO_MARKER_PATTERN = /\[DINGTALK_AUDIO\]({.*?})\[\/DINGTALK_AUDIO\]/g;
@@ -53,6 +68,12 @@ const AUDIO_MARKER_PATTERN = /\[DINGTALK_AUDIO\]({.*?})\[\/DINGTALK_AUDIO\]/g;
 const MAX_VIDEO_SIZE = 20 * 1024 * 1024;
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
+// ============ Path Conversion ============
+
+/**
+ * Strips custom protocol prefixes (e.g. file://, MEDIA:, attachment://) and unescapes URIs.
+ * Returns the final absolute native path.
+ */
 export function toLocalPath(raw: string): string {
   let path = raw;
   if (path.startsWith("file://")) path = path.replace("file://", "");
@@ -64,6 +85,15 @@ export function toLocalPath(raw: string): string {
   return path;
 }
 
+// ============ DingTalk Media Upload ============
+
+/**
+ * General-purpose function for uploading local media files directly to the target DingTalk environment.
+ * @param filePath The exact local structural file path to upload
+ * @param mediaType 'image' | 'file' | 'video' | 'voice'
+ * @param oapiToken DingTalk internal OAPI access_token
+ * @param maxSize Maximum allowed payload size restriction for checking before network upload
+ */
 export async function uploadMediaToDingTalk(
   filePath: string,
   mediaType: "image" | "file" | "video" | "voice",
@@ -113,6 +143,12 @@ export async function uploadMediaToDingTalk(
   }
 }
 
+// ============ Image Post-Processing ============
+
+/**
+ * Specifically parses output text to recognize bare local absolute paths and Markdown images,
+ * asynchronously uploads them, and subsequently replaces original references with resulting DingTalk media_ids.
+ */
 export async function processLocalImages(
   content: string,
   oapiToken: string | null,
@@ -124,7 +160,7 @@ export async function processLocalImages(
   const mdMatches = [...content.matchAll(LOCAL_IMAGE_RE)];
   for (const match of mdMatches) {
     const [fullMatch, alt, rawPath] = match;
-    const cleanPath = rawPath.replace(/\\\\ /g, " ");
+    const cleanPath = rawPath.replace(/\\ /g, " ");
     const mediaId = await uploadMediaToDingTalk(
       cleanPath,
       "image",
@@ -155,12 +191,18 @@ export async function processLocalImages(
   return result;
 }
 
+// ============ Video Metadata Extraction ============
+
+/** Defines foundational characteristics required for video payloads in DingTalk */
 export interface VideoMetadata {
   duration: number;
   width: number;
   height: number;
 }
 
+/**
+ * Uses ffprobe to identify and compute dimensions (width and height) and duration of a given video.
+ */
 export async function extractVideoMetadata(
   filePath: string,
   log?: DingTalkLogger,
@@ -205,6 +247,12 @@ export async function extractVideoMetadata(
   }
 }
 
+// ============ File Marker Post-Processing ============
+
+/**
+ * Sweeps context text for structural video block tags (e.g., [DINGTALK_VIDEO]), parses target video info out,
+ * calculates required metadata, ships video blocks to DingTalk media pools, and forwards final message to the proactive target endpoint.
+ */
 export async function processVideoMarkers(
   content: string,
   sessionWebhook: string,
