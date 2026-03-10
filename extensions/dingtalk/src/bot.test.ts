@@ -1,8 +1,8 @@
 import axios from "axios";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as auth from "./auth.js";
-import { handleDingTalkMessage, createAICardForTarget, extractMessageContent } from "./bot.js";
-import { setDingTalkRuntime } from "./runtime.js";
+import * as auth from "./auth.ts";
+import { handleDingTalkMessage, createAICardForTarget, extractMessageContent } from "./bot.ts";
+import { setDingTalkRuntime } from "./runtime.ts";
 
 vi.mock("axios");
 

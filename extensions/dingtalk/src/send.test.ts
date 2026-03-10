@@ -1,10 +1,10 @@
 import axios from "axios";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as auth from "./auth.js";
-import * as bot from "./bot.js";
-import * as media from "./media.js";
-import { sendToUser, sendToGroup, sendProactive } from "./send.js";
-import type { DingtalkAccountConfig } from "./types.js";
+import * as auth from "./auth.ts";
+import * as bot from "./bot.ts";
+import * as media from "./media.ts";
+import { sendToUser, sendToGroup, sendProactive } from "./send.ts";
+import type { DingtalkAccountConfig } from "./types.ts";
 
 vi.mock("axios");
 vi.mock("./auth.js");

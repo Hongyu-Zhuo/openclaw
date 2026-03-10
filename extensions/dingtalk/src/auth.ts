@@ -6,7 +6,7 @@ import axios from "axios";
 let accessToken: string | null = null;
 /** Expiration timestamp for the cached token */
 let accessTokenExpiry = 0;
-import { DingtalkAccountConfig } from "./types.js";
+import { DingtalkAccountConfig } from "./types.ts";
 
 // ============ Token Management ============
 

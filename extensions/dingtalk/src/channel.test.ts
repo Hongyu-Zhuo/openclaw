@@ -1,7 +1,7 @@
 import type { OpenClawConfig } from "openclaw/plugin-sdk";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { dingtalkPlugin } from "./channel.js";
-import type { ResolvedDingtalkAccount } from "./types.js";
+import { dingtalkPlugin } from "./channel.ts";
+import type { ResolvedDingtalkAccount } from "./types.ts";
 
 vi.mock("dingtalk-stream", () => ({
   DWClient: vi.fn().mockImplementation(() => ({
@@ -16,7 +16,7 @@ vi.mock("./bot.js");
 vi.mock("./session.js");
 vi.mock("./send.js");
 vi.mock("./config.js", async (importOriginal) => {
-  const original = await importOriginal<typeof import("./config.js")>();
+  const original = await importOriginal<typeof import("./config.ts")>();
   return {
     ...original,
   };

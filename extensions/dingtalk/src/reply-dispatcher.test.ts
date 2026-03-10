@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as bot from "./bot.js";
-import { createDingTalkReplyDispatcher } from "./reply-dispatcher.js";
-import * as runtime from "./runtime.js";
-import * as send from "./send.js";
+import * as bot from "./bot.ts";
+import { createDingTalkReplyDispatcher } from "./reply-dispatcher.ts";
+import * as runtime from "./runtime.ts";
+import * as send from "./send.ts";
 
 vi.mock("./bot.js", () => ({
   createAICardForTarget: vi.fn(),

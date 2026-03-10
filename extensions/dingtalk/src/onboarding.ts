@@ -6,8 +6,8 @@ import type {
   WizardPrompter,
 } from "openclaw/plugin-sdk";
 import { addWildcardAllowFrom, DEFAULT_ACCOUNT_ID, formatDocsLink } from "openclaw/plugin-sdk";
-import { isConfigured } from "./config.js";
-import type { DingtalkAccountConfig } from "./types.js";
+import { isConfigured } from "./config.ts";
+import type { DingtalkAccountConfig } from "./types.ts";
 
 // ============ Constants ============
 

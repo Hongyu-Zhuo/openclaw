@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { toLocalPath, buildMediaSystemPrompt, processLocalImages } from "./media.js";
+import { toLocalPath, buildMediaSystemPrompt, processLocalImages } from "./media.ts";
 
 vi.mock("axios");
 

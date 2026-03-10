@@ -4,7 +4,7 @@ import {
   markMessageProcessed,
   isNewSessionCommand,
   getSessionKey,
-} from "./session.js";
+} from "./session.ts";
 
 describe("session", () => {
   describe("isNewSessionCommand", () => {

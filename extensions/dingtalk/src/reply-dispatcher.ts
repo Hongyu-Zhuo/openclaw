@@ -6,15 +6,15 @@ import {
   type ReplyPayload,
   type RuntimeEnv,
 } from "openclaw/plugin-sdk";
-import { createAICardForTarget, finishAICard } from "./bot.js";
-import { getDingTalkRuntime } from "./runtime.js";
-import { sendToUser, sendToGroup } from "./send.js";
+import { createAICardForTarget, finishAICard } from "./bot.ts";
+import { getDingTalkRuntime } from "./runtime.ts";
+import { sendToUser, sendToGroup } from "./send.ts";
 import type {
   AICardInstance,
   AICardTarget,
   DingtalkAccountConfig,
   DingTalkLogger,
-} from "./types.js";
+} from "./types.ts";
 
 export type CreateDingTalkReplyDispatcherParams = {
   cfg: ClawdbotConfig;

@@ -1,12 +1,12 @@
 import axios from "axios";
-import { getAccessToken, getOapiAccessToken } from "./auth.js";
-import { createAICardForTarget, finishAICard } from "./bot.js";
+import { getAccessToken, getOapiAccessToken } from "./auth.ts";
+import { createAICardForTarget, finishAICard } from "./bot.ts";
 import {
   processLocalImages,
   processVideoMarkers,
   processAudioMarkers,
   processFileMarkers,
-} from "./media.js";
+} from "./media.ts";
 import {
   AICardTarget,
   DingTalkMsgType,
@@ -14,7 +14,7 @@ import {
   SendResult,
   DingtalkAccountConfig,
   DingTalkLogger,
-} from "./types.js";
+} from "./types.ts";
 
 // ============ Constants ============
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { AICardTarget, DingtalkAccountConfig, DingTalkLogger } from "./types.js";
+import { AICardTarget, DingtalkAccountConfig, DingTalkLogger } from "./types.ts";
 
 // ============ Media System Prompt ============
 

@@ -1,8 +1,8 @@
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpenClawConfig } from "openclaw/plugin-sdk";
-import { dingtalkPlugin } from "./src/channel.js";
-import { resolveDingTalkAccount } from "./src/config.js";
-import { setDingTalkRuntime } from "./src/runtime.js";
+import { dingtalkPlugin } from "./src/channel.ts";
+import { resolveDingTalkAccount } from "./src/config.ts";
+import { setDingTalkRuntime } from "./src/runtime.ts";
 import {
   sendToUser,
   sendToGroup,
@@ -10,7 +10,7 @@ import {
   sendMessage,
   sendTextMessage,
   sendMarkdownMessage,
-} from "./src/send.js";
+} from "./src/send.ts";
 
 interface CustomGatewayOpts {
   respond: (ok: boolean, payload?: any, error?: any) => void;

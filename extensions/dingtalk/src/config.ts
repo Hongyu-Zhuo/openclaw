@@ -1,5 +1,5 @@
 import type { ClawdbotConfig } from "openclaw/plugin-sdk";
-import { DingtalkAccountConfig, ResolvedDingtalkAccount } from "./types.js";
+import { DingtalkAccountConfig, ResolvedDingtalkAccount } from "./types.ts";
 
 // ============ Configuration Extraction ============
 
