@@ -191,6 +191,12 @@ export const dingtalkPlugin: ChannelPlugin<ResolvedDingtalkAccount> = {
 
           try {
             const data = JSON.parse(res.data);
+            const chatMsgId = data.msgId;
+
+            // Prevent duplicate handling of the same chat message (ordering conflicts)
+            if (chatMsgId && isMessageProcessed(`chat:${chatMsgId}`)) return;
+            if (chatMsgId) markMessageProcessed(`chat:${chatMsgId}`);
+
             await handleDingTalkMessage({
               cfg,
               accountId: account.accountId,

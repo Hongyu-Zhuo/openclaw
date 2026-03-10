@@ -301,7 +301,7 @@ export async function handleDingTalkMessage(params: {
     Surface: "dingtalk" as const,
     MessageSid: `dingtalk:${data.msgId || Date.now()}`,
     Timestamp: Date.now(),
-    WasMentioned: false,
+    WasMentioned: true, // DingTalk Stream: group messages require @-mention to reach bot; DMs are implicitly directed
     CommandAuthorized: commandAuthorized,
     OriginatingChannel: "dingtalk" as const,
     OriginatingTo: dingtalkTo,
@@ -340,10 +340,10 @@ export async function handleDingTalkMessage(params: {
       replyOptions,
     });
 
-    markDispatchIdle();
-
     log?.info?.(`dingtalk[${accountId}]: dispatch complete`);
   } catch (err) {
     log?.error?.(`dingtalk[${accountId}]: failed to dispatch message: ${String(err)}`);
+  } finally {
+    markDispatchIdle();
   }
 }
